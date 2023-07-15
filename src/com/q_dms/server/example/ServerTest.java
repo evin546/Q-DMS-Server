@@ -13,14 +13,14 @@ public class ServerTest {
 
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        User user = new User("user1", "user1", "男");
+        User user = new User("user0", "user1", "男");
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         LogisticsRec logisticsRec = new LogisticsRec(-1, timestamp, "中国", "0", "小五", "小六", "1", "-1");
 //        int businessId = 1;
 //        Request request = new Request(user, businessId,null,null);
 //        int businessId = 6;
 //        Request request = new Request(user, businessId,null,logisticsRec);
-        int businessId = 1;
+        int businessId = 3;
         Request request = new Request(user, businessId, null, null);
 
 

@@ -36,10 +36,9 @@ public class Server {
      * @throws SQLException           .
      */
     public static void clientRequestHandler() throws IOException, ClassNotFoundException, SQLException {
-        Object response = null;
         // 创建ServerSocket对象，并指定监听的端口号
         ServerSocket serverSocket = new ServerSocket(8888);
-        System.out.println("等待客户端连接...");
+        System.out.println("服务端初始化成功，当前监听端口：" + serverSocket.getLocalPort());
         //死循环接收客户端数据
         while (true) {
             // 接收客户端连接
@@ -67,27 +66,17 @@ public class Server {
 
             //执行对应业务逻辑
             switch (businessId) {
-                case REGISTER:
-                    sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().registerUser(user));
-                    break;
-                case LOGIN:
-                    sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().loginCheck(user));
-                    break;
-                case GET_ALL_LOG_REC:
-                    sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().selectAllLogRec(user));
-                    break;
-                case GET_ALL_LOGISTICS_REC:
-                    sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().selectAllLogisticsRec(user));
-                    break;
-                case ADD_LOG_REC:
-                    sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogRec(user, logRec));
-                    break;
-                case ADD_LOGISTICS_REC:
-                    sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogisticsRec(user, logisticsRec));
-                    break;
-                default:
-                    //空
-                    break;
+                case REGISTER -> sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().registerUser(user));
+                case LOGIN -> sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().loginCheck(user));
+                case GET_ALL_LOG_REC ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().selectAllLogRec(user));
+                case GET_ALL_LOGISTICS_REC ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().selectAllLogisticsRec(user));
+                case ADD_LOG_REC -> sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogRec(user, logRec));
+                case ADD_LOGISTICS_REC ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogisticsRec(user, logisticsRec));
+                default -> System.out.println("业务ID错误！");
+
             }
             clientSocket.close();
         }

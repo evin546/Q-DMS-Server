@@ -46,15 +46,9 @@ public class DatabaseUtil {
      * @param sql 需要执行的SQL语句
      * @return ResultSet（正常）/null（异常）
      */
-    private PreparedStatement getPstmt(String sql) {
-        try {
-            conn = DriverManager.getConnection(db_url, db_username, db_password);
-            pstmt = conn.prepareStatement(sql);
-
-
-        } catch (SQLException e) {
-            return null;
-        }
+    private PreparedStatement getPstmt(String sql) throws SQLException {
+        conn = DriverManager.getConnection(db_url, db_username, db_password);
+        pstmt = conn.prepareStatement(sql);
         return pstmt;
     }
 
@@ -100,13 +94,13 @@ public class DatabaseUtil {
                 //关闭连接，释放资源
                 this.closeConnection();
                 if (count > 0) {
-                    return 0;
+                    return 0; //注册成功
                 } else {
-                    return 2;
+                    return 2; //注册失败，数据库修改失败
                 }
             }
         } catch (SQLException e) {
-            return 2;
+            return 2; //注册失败，数据库修改失败
         }
     }
 
@@ -147,32 +141,33 @@ public class DatabaseUtil {
             String sql = "SELECT * FROM `log_record` WHERE `recCreator` = ?";
             pstmt = this.getPstmt(sql);
             pstmt.setString(1, user.getUsername());
-            if (pstmt != null) {
-                rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
+            //rs为空，返回null
+            if (!rs.next()) {
+                return null;
             }
-            if (rs != null) {
-                while (rs.next()) {
-                    int logId = rs.getInt("logId");
-                    Timestamp creationTime = rs.getTimestamp("creationTime");
-                    String creationLocation = rs.getString("creationLocation");
-                    String status = rs.getString("status");
-                    String logUsername = rs.getString("logUsername");
-                    String ip = rs.getString("ip");
-                    String logType = rs.getString("logType");
-                    String recCreator = rs.getString("recCreator");
+            while (rs.next()) {
+                int logId = rs.getInt("logId");
+                Timestamp creationTime = rs.getTimestamp("creationTime");
+                String creationLocation = rs.getString("creationLocation");
+                String status = rs.getString("status");
+                String logUsername = rs.getString("logUsername");
+                String ip = rs.getString("ip");
+                String logType = rs.getString("logType");
+                String recCreator = rs.getString("recCreator");
 
-                    LogRec logRec = new LogRec();
-                    logRec.setLogId(logId);
-                    logRec.setCreationTime(creationTime);
-                    logRec.setCreationLocation(creationLocation);
-                    logRec.setStatus(status);
-                    logRec.setLogUsername(logUsername);
-                    logRec.setIp(ip);
-                    logRec.setLogType(logType);
-                    logRec.setRecCreator(recCreator);
-                    logRecList.add(logRec);
-                }
+                LogRec logRec = new LogRec();
+                logRec.setLogId(logId);
+                logRec.setCreationTime(creationTime);
+                logRec.setCreationLocation(creationLocation);
+                logRec.setStatus(status);
+                logRec.setLogUsername(logUsername);
+                logRec.setIp(ip);
+                logRec.setLogType(logType);
+                logRec.setRecCreator(recCreator);
+                logRecList.add(logRec);
             }
+
             this.closeConnection();
         } catch (SQLException e) {
             return null;
@@ -187,7 +182,6 @@ public class DatabaseUtil {
      * @return List<LogisticsRec>类型的对象（正常）/null（异常：查询不到）
      */
     public List<LogisticsRec> selectAllLogisticsRec(User user) {
-
         LogisticsRec logisticsRec = new LogisticsRec();
         List<LogisticsRec> logisticsRecList = new ArrayList<>();
         try {
@@ -195,30 +189,30 @@ public class DatabaseUtil {
             String sql = "SELECT * FROM `logistics_record` WHERE `recCreator` = ?;";
             pstmt = this.getPstmt(sql);
             pstmt.setString(1, user.getUsername());
-            if (pstmt != null) {
-                rs = pstmt.executeQuery();
-            }
-            if (rs != null) {
-                while (rs.next()) {
-                    int logisticsId = rs.getInt("logisticsId");
-                    Timestamp creationTime = rs.getTimestamp("creationTime");
-                    String destination = rs.getString("destination");
-                    String status = rs.getString("status");
-                    String handler = rs.getString("handler");
-                    String consignee = rs.getString("consignee");
-                    String logisticsType = rs.getString("logisticsType");
-                    String recCreator = rs.getString("recCreator");
+            rs = pstmt.executeQuery();
 
-                    logisticsRec.setLogisticsId(logisticsId);
-                    logisticsRec.setCreationTime(creationTime);
-                    logisticsRec.setDestination(destination);
-                    logisticsRec.setStatus(status);
-                    logisticsRec.setHandler(handler);
-                    logisticsRec.setConsignee(consignee);
-                    logisticsRec.setLogisticsType(logisticsType);
-                    logisticsRec.setRecCreator(recCreator);
-                    logisticsRecList.add(logisticsRec);
-                }
+            if (!rs.next()) {
+                return null;
+            }
+            while (rs.next()) {
+                int logisticsId = rs.getInt("logisticsId");
+                Timestamp creationTime = rs.getTimestamp("creationTime");
+                String destination = rs.getString("destination");
+                String status = rs.getString("status");
+                String handler = rs.getString("handler");
+                String consignee = rs.getString("consignee");
+                String logisticsType = rs.getString("logisticsType");
+                String recCreator = rs.getString("recCreator");
+
+                logisticsRec.setLogisticsId(logisticsId);
+                logisticsRec.setCreationTime(creationTime);
+                logisticsRec.setDestination(destination);
+                logisticsRec.setStatus(status);
+                logisticsRec.setHandler(handler);
+                logisticsRec.setConsignee(consignee);
+                logisticsRec.setLogisticsType(logisticsType);
+                logisticsRec.setRecCreator(recCreator);
+                logisticsRecList.add(logisticsRec);
             }
             this.closeConnection();
         } catch (SQLException e) {
@@ -234,7 +228,7 @@ public class DatabaseUtil {
      * @param logRec LogRec的对象
      * @return 0（添加成功）/ 1（添加失败）
      */
-    public int addLogRec(User user, LogRec logRec) throws SQLException {
+    public int addLogRec(User user, LogRec logRec) {
         try {
             String sql = "INSERT INTO `log_record`(`creationTime`,`creationLocation`,`status`,`logUsername`,`ip`,`logType`,`recCreator`) VALUES (?, ?, ?, ?, ?, ?, ?);";
             pstmt = this.getPstmt(sql);

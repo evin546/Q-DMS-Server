@@ -15,7 +15,7 @@ public class DatabaseUtilTest {
 
     public static void main(String[] args) throws SQLException {
         DatabaseUtil databaseUtil = DatabaseUtil.getDatabaseUtil();
-        User user = new User("user1", "user1", "男");
+        User user = new User("user9", "user1", "男");
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
         LogRec logRec = new LogRec(-1, timestamp, "四川", "1", "王五", "192.168.2.2", "3", "-1");
