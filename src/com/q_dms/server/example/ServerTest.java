@@ -1,5 +1,6 @@
 package com.q_dms.server.example;
 
+import com.q_dms.server.entity.LogRec;
 import com.q_dms.server.entity.LogisticsRec;
 import com.q_dms.server.entity.Request;
 import com.q_dms.server.entity.User;
@@ -13,15 +14,18 @@ public class ServerTest {
 
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        User user = new User("user0", "user1", "男");
+        User user = new User("user1", "user1", "男");
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        LogisticsRec logisticsRec = new LogisticsRec(-1, timestamp, "中国", "0", "小五", "小六", "1", "-1");
-//        int businessId = 1;
+        LogisticsRec logisticsRec = new LogisticsRec(-1, timestamp, "中国", "01111", "小五", "小六", "1", "-1");
+        LogRec logRec = new LogRec(-1, timestamp, "四川", "11111", "十九", "192.168.2.2", "3", "-1");
+
+
+        //        int businessId = 1;
 //        Request request = new Request(user, businessId,null,null);
 //        int businessId = 6;
 //        Request request = new Request(user, businessId,null,logisticsRec);
-        int businessId = 3;
-        Request request = new Request(user, businessId, null, null);
+        int businessId = 5;
+        Request request = new Request(user, businessId, logRec, logisticsRec);
 
 
         sendData(request);

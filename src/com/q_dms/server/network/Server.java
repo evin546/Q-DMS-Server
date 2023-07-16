@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 import static com.q_dms.server.serialization.ObjectSerializationUtil.serialize;
 
@@ -38,7 +39,7 @@ public class Server {
     public static void clientRequestHandler() throws IOException, ClassNotFoundException, SQLException {
         // 创建ServerSocket对象，并指定监听的端口号
         ServerSocket serverSocket = new ServerSocket(8888);
-        System.out.println("服务端初始化成功，当前监听端口：" + serverSocket.getLocalPort());
+        System.out.println(getCurrentTime() +" 服务端初始化成功，当前监听端口：" + serverSocket.getLocalPort());
         //死循环接收客户端数据
         while (true) {
             // 接收客户端连接
@@ -63,20 +64,23 @@ public class Server {
             User user = request.getUser();
             LogRec logRec = request.getLogRec();
             LogisticsRec logisticsRec = request.getLogisticsRec();
-
+            System.out.println( getCurrentTime() + " 客户端业务ID： " + businessId);
             //执行对应业务逻辑
             switch (businessId) {
-                case REGISTER -> sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().registerUser(user));
-                case LOGIN -> sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().loginCheck(user));
+                case REGISTER ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().registerUser(user));
+                case LOGIN ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().loginCheck(user));
                 case GET_ALL_LOG_REC ->
                         sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().selectAllLogRec(user));
                 case GET_ALL_LOGISTICS_REC ->
                         sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().selectAllLogisticsRec(user));
-                case ADD_LOG_REC -> sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogRec(user, logRec));
+                case ADD_LOG_REC ->
+                    sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogRec(user, logRec));
                 case ADD_LOGISTICS_REC ->
                         sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogisticsRec(user, logisticsRec));
-                default -> System.out.println("业务ID错误！");
-
+                default ->
+                        System.out.println(getCurrentTime() + " 客户端业务ID提交错误！");
             }
             clientSocket.close();
         }
@@ -95,11 +99,19 @@ public class Server {
      */
     public static void sendResponse(Socket clientSocket, Object response) throws IOException {
         byte[] serializedResponse = serialize(response);
-        System.out.println(response);
+        System.out.println(getCurrentTime() +" 向客户端发送响应：" + response);
         OutputStream outputStream = clientSocket.getOutputStream();
         // 发送响应数据到客户端
         outputStream.write(serializedResponse);
         outputStream.flush();
+    }
+
+    /**
+     * 获取当前时间
+     * @return Timestamp 类型的对象，表示当前时间
+     */
+    static Timestamp getCurrentTime(){
+        return new Timestamp(System.currentTimeMillis());
     }
 
 }

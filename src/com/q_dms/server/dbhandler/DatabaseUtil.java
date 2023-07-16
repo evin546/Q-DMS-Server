@@ -146,7 +146,7 @@ public class DatabaseUtil {
             if (!rs.next()) {
                 return null;
             }
-            while (rs.next()) {
+            do {
                 int logId = rs.getInt("logId");
                 Timestamp creationTime = rs.getTimestamp("creationTime");
                 String creationLocation = rs.getString("creationLocation");
@@ -166,7 +166,7 @@ public class DatabaseUtil {
                 logRec.setLogType(logType);
                 logRec.setRecCreator(recCreator);
                 logRecList.add(logRec);
-            }
+            }while(rs.next());
 
             this.closeConnection();
         } catch (SQLException e) {
@@ -182,7 +182,6 @@ public class DatabaseUtil {
      * @return List<LogisticsRec>类型的对象（正常）/null（异常：查询不到）
      */
     public List<LogisticsRec> selectAllLogisticsRec(User user) {
-        LogisticsRec logisticsRec = new LogisticsRec();
         List<LogisticsRec> logisticsRecList = new ArrayList<>();
         try {
             //执行sql语句
@@ -194,7 +193,7 @@ public class DatabaseUtil {
             if (!rs.next()) {
                 return null;
             }
-            while (rs.next()) {
+            do {
                 int logisticsId = rs.getInt("logisticsId");
                 Timestamp creationTime = rs.getTimestamp("creationTime");
                 String destination = rs.getString("destination");
@@ -204,6 +203,7 @@ public class DatabaseUtil {
                 String logisticsType = rs.getString("logisticsType");
                 String recCreator = rs.getString("recCreator");
 
+                LogisticsRec logisticsRec = new LogisticsRec();
                 logisticsRec.setLogisticsId(logisticsId);
                 logisticsRec.setCreationTime(creationTime);
                 logisticsRec.setDestination(destination);
@@ -213,7 +213,7 @@ public class DatabaseUtil {
                 logisticsRec.setLogisticsType(logisticsType);
                 logisticsRec.setRecCreator(recCreator);
                 logisticsRecList.add(logisticsRec);
-            }
+            }while(rs.next());
             this.closeConnection();
         } catch (SQLException e) {
             return null;
@@ -275,7 +275,7 @@ public class DatabaseUtil {
                 return 1;
             }
         } catch (SQLException e) {
-            return 0;
+            return 1;
         }
     }
 
