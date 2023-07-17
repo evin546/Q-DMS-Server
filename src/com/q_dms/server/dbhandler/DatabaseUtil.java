@@ -64,7 +64,7 @@ public class DatabaseUtil {
     }
 
     /**
-     * 用户注册逻辑(业务ID：1)
+     * 用户注册(业务ID：1)
      *
      * @param user User类的对象
      * @return 0（注册成功）/ 1（注册失败，已存在相同的用户名）/ 2（失败，未知原因）
@@ -105,7 +105,7 @@ public class DatabaseUtil {
     }
 
     /**
-     * 登录时账号验证逻辑（业务ID：2）
+     * 用户登录（业务ID：2）
      *
      * @param user User类的对象
      * @return 0（登录成功）/ 1（登录失败：数据库找不到匹配的用户名密码记录，登录失败）
@@ -124,6 +124,29 @@ public class DatabaseUtil {
             return 0;
         } else {
             this.closeConnection();
+            return 1;
+        }
+    }
+
+    /**
+     * 修改密码（业务ID：7）
+     * @param user User类的对象
+     * @return 0（修改成功）/ 1（修改失败）
+     */
+    public int changePassword(User user) {
+
+        String sql = "UPDATE `user_info` SET `password` = ? WHERE `username` = ?";
+        try {
+            pstmt = this.getPstmt(sql);
+            pstmt.setString(1, user.getPassword());
+            pstmt.setString(2, user.getUsername());
+            int count = pstmt.executeUpdate();
+            if (count > 0) {
+                return 0; //修改成功
+            } else {
+                return 1; //修改失败
+            }
+        } catch (SQLException e) {
             return 1;
         }
     }

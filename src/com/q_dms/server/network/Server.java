@@ -26,6 +26,7 @@ public class Server {
     static final int GET_ALL_LOGISTICS_REC = 4;
     static final int ADD_LOG_REC = 5;
     static final int ADD_LOGISTICS_REC = 6;
+    static final int CHANG_PASSWORD = 7;
 
 
     /**
@@ -65,6 +66,7 @@ public class Server {
             LogRec logRec = request.getLogRec();
             LogisticsRec logisticsRec = request.getLogisticsRec();
             System.out.println( getCurrentTime() + " 客户端业务ID： " + businessId);
+
             //执行对应业务逻辑
             switch (businessId) {
                 case REGISTER ->
@@ -79,6 +81,8 @@ public class Server {
                     sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogRec(user, logRec));
                 case ADD_LOGISTICS_REC ->
                         sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogisticsRec(user, logisticsRec));
+                case CHANG_PASSWORD ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().changePassword(user));
                 default ->
                         System.out.println(getCurrentTime() + " 客户端业务ID提交错误！");
             }
