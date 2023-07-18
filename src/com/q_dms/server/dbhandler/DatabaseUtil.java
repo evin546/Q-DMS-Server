@@ -46,7 +46,7 @@ public class DatabaseUtil {
      * @param sql 需要执行的SQL语句
      * @return ResultSet（正常）/null（异常）
      */
-    private PreparedStatement getPstmt(String sql) throws SQLException {
+    public PreparedStatement getPstmt(String sql) throws SQLException {
         conn = DriverManager.getConnection(db_url, db_username, db_password);
         pstmt = conn.prepareStatement(sql);
         return pstmt;
@@ -90,10 +90,10 @@ public class DatabaseUtil {
                 pstmt.setString(2, user.getPassword());
                 pstmt.setString(3, user.getSex());
                 //方法返回受影响的行数，若行数大于0，则注册数据写入成功，注册成功
-                int count = pstmt.executeUpdate();
+                int rowsAffected = pstmt.executeUpdate();
                 //关闭连接，释放资源
                 this.closeConnection();
-                if (count > 0) {
+                if (rowsAffected > 0) {
                     return 0; //注册成功
                 } else {
                     return 2; //注册失败，数据库修改失败
@@ -140,8 +140,8 @@ public class DatabaseUtil {
             pstmt = this.getPstmt(sql);
             pstmt.setString(1, user.getPassword());
             pstmt.setString(2, user.getUsername());
-            int count = pstmt.executeUpdate();
-            if (count > 0) {
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
                 return 0; //修改成功
             } else {
                 return 1; //修改失败
@@ -152,7 +152,7 @@ public class DatabaseUtil {
     }
 
     /**
-     * 查询账号名下的所有日志记录（业务ID：3）
+     * 获取账号名下的所有日志记录（业务ID：3）
      * * @param username 当前登录的用户名
      *
      * @return List<LogRec>类型的对象（正常）/null（异常：查询不到）
@@ -190,7 +190,6 @@ public class DatabaseUtil {
                 logRec.setRecCreator(recCreator);
                 logRecList.add(logRec);
             }while(rs.next());
-
             this.closeConnection();
         } catch (SQLException e) {
             return null;
@@ -199,7 +198,7 @@ public class DatabaseUtil {
     }
 
     /**
-     * 查询账号名下的所有物流记录（业务ID：4）
+     * 获取账号名下的所有物流记录（业务ID：4）
      *
      * @param user 类的对象
      * @return List<LogisticsRec>类型的对象（正常）/null（异常：查询不到）
@@ -262,8 +261,8 @@ public class DatabaseUtil {
             pstmt.setString(5, logRec.getIp());
             pstmt.setString(6, logRec.getLogType());
             pstmt.setString(7, user.getUsername());
-            int count = pstmt.executeUpdate();
-            if (count > 0) {
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
                 return 0;
             } else {
                 return 1;
@@ -291,8 +290,8 @@ public class DatabaseUtil {
             pstmt.setString(5, logisticsRec.getConsignee());
             pstmt.setString(6, logisticsRec.getLogisticsType());
             pstmt.setString(7, user.getUsername());
-            int count = pstmt.executeUpdate();
-            if (count > 0) {
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
                 return 0;
             } else {
                 return 1;
@@ -302,5 +301,195 @@ public class DatabaseUtil {
         }
     }
 
+    /**
+     * 删除指定日志记录（业务ID：8）
+     * @param logRec LogRec类的对象，用于获取欲删除的logId
+     * @return 0（成功） / 1（失败）
+     */
+    public int deleteLogRec(LogRec logRec)  {
+        try {
+            String sql = "DELETE FROM `log_record` WHERE `logId` = ?;";
+            pstmt = this.getPstmt(sql);
+            pstmt.setInt(1, logRec.getLogId());
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                return 0;
+            } else {
+                return 1;
+            }
+        } catch (SQLException e) {
+            return 1;
+        }
+    }
+
+    /**
+     * 删除指定物流记录（业务id：9）
+     * @param logisticsRec LogisticsRec类的对象，用于获取欲删除的logisticsId
+     * @return 0（成功） / 1（失败）
+     */
+    public int deleteLogisticsRec(LogisticsRec logisticsRec)  {
+        try {
+            String sql = "DELETE FROM `logistics_record` WHERE `logisticsId` = ?;";
+            pstmt = this.getPstmt(sql);
+            pstmt.setInt(1, logisticsRec.getLogisticsId());
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                return 0;
+            } else {
+                return 1;
+            }
+        } catch (SQLException e) {
+            return 1;
+        }
+    }
+
+    /**
+     * 实现模糊查询当前登录用户的日志数据 （业务ID :10）
+     * @param logRec 支持查找recCreator、creationLocation、status、logUsername、ip项
+     * @return List<LogRec>（正常） / null (异常)
+     */
+    public List<LogRec> searchLogRecInDatabase(LogRec logRec) {
+        List<LogRec> resLogRecList = new ArrayList<>();
+        try {
+            String sql = "SELECT * FROM log_record WHERE (`recCreator` = ?)";
+            if (!logRec.getCreationLocation().isBlank()) {
+                sql += " AND (`creationLocation` LIKE ?)";
+            }
+            if (!logRec.getStatus().isBlank()) {
+                sql += " AND (`status` LIKE ?)";
+            }
+            if (!logRec.getLogUsername().isBlank()) {
+                sql += " AND (`logUsername` LIKE ?)";
+            }
+            if (!logRec.getIp().isBlank()) {
+                sql += " AND (`ip` LIKE ?)";
+            }
+
+            pstmt = databaseUtil.getPstmt(sql);
+            pstmt.setString(1, logRec.getRecCreator());
+            int index = 1;
+            if (!logRec.getCreationLocation().isBlank()) {
+                index++;
+                pstmt.setString(index, "%" + logRec.getCreationLocation() + "%");
+            }
+            if (!logRec.getStatus().isBlank()) {
+                index++;
+                pstmt.setString(index, "%" + logRec.getStatus() + "%");
+            }
+            if (!logRec.getLogUsername().isBlank()) {
+                index++;
+                pstmt.setString(index, "%" + logRec.getLogUsername() + "%");
+            }
+            if (!logRec.getIp().isBlank()) {
+                index++;
+                pstmt.setString(index, "%" + logRec.getIp() + "%");
+            }
+            pstmt.executeQuery();
+            rs = pstmt.executeQuery();
+            //rs为空，返回null
+            if (!rs.next()) {
+                return null;
+            }
+            do {
+                int logId = rs.getInt("logId");
+                Timestamp creationTime = rs.getTimestamp("creationTime");
+                String creationLocation = rs.getString("creationLocation");
+                String status = rs.getString("status");
+                String logUsername = rs.getString("logUsername");
+                String ip = rs.getString("ip");
+                String logType = rs.getString("logType");
+                String recCreator = rs.getString("recCreator");
+
+                LogRec resLogRec = new LogRec();
+                resLogRec.setLogId(logId);
+                resLogRec.setCreationTime(creationTime);
+                resLogRec.setCreationLocation(creationLocation);
+                resLogRec.setStatus(status);
+                resLogRec.setLogUsername(logUsername);
+                resLogRec.setIp(ip);
+                resLogRec.setLogType(logType);
+                resLogRec.setRecCreator(recCreator);
+                resLogRecList.add(resLogRec);
+            } while (rs.next());
+            this.closeConnection();
+        } catch (SQLException e) {
+            return null;
+        }
+        return resLogRecList;
+    }
+
+    /**
+     * 实现模糊查询当前登录用户的物流数据（业务ID：11）
+     * @param logisticsRec 支持查找recCreator，destination，status，handler，consignee
+     * @return List<LogisticsRec>（正常） / null（异常）
+     */
+    public List<LogisticsRec> searchLogisticsRecInDatabase(LogisticsRec logisticsRec) {
+        List<LogisticsRec> resLogisticsRecList = new ArrayList<>();
+        try {
+            String sql = "SELECT * FROM logistics_record WHERE (`recCreator` = ?)";
+            if (!logisticsRec.getDestination().isBlank()) {
+                sql += " AND (`destination` LIKE ?)";
+            }
+            if (!logisticsRec.getStatus().isBlank()) {
+                sql += " AND (`status` LIKE ?)";
+            }
+            if (!logisticsRec.getHandler().isBlank()) {
+                sql += " AND (`handler` LIKE ?)";
+            }
+            if (!logisticsRec.getConsignee().isBlank()) {
+                sql += " AND (`consignee` LIKE ?)";
+            }
+            pstmt = databaseUtil.getPstmt(sql);
+            pstmt.setString(1, logisticsRec.getRecCreator());
+            int index = 1;
+            if (!logisticsRec.getDestination().isBlank()) {
+                index++;
+                pstmt.setString(index, "%" + logisticsRec.getDestination() + "%");
+            }
+            if (!logisticsRec.getStatus().isBlank()) {
+                index++;
+                pstmt.setString(index, "%" + logisticsRec.getStatus() + "%");
+            }
+            if (!logisticsRec.getHandler().isBlank()) {
+                index++;
+                pstmt.setString(index, "%" + logisticsRec.getHandler() + "%");
+            }
+            if (!logisticsRec.getConsignee().isBlank()) {
+                index++;
+                pstmt.setString(index, "%" + logisticsRec.getConsignee() + "%");
+            }
+            pstmt.executeQuery();
+            rs = pstmt.executeQuery();
+            //rs为空，返回null
+            if (!rs.next()) {
+                return null;
+            }
+            do {
+                int logisticsId = rs.getInt("logisticsId");
+                Timestamp creationTime = rs.getTimestamp("creationTime");
+                String destination = rs.getString("destination");
+                String status = rs.getString("status");
+                String handler = rs.getString("handler");
+                String consignee = rs.getString("consignee");
+                String logisticsType = rs.getString("logisticsType");
+                String recCreator = rs.getString("recCreator");
+
+                LogisticsRec resLogisticsRec = new LogisticsRec();
+                resLogisticsRec.setLogisticsId(logisticsId);
+                resLogisticsRec.setCreationTime(creationTime);
+                resLogisticsRec.setDestination(destination);
+                resLogisticsRec.setStatus(status);
+                resLogisticsRec.setHandler(handler);
+                resLogisticsRec.setConsignee(consignee);
+                resLogisticsRec.setLogisticsType(logisticsType);
+                resLogisticsRec.setRecCreator(recCreator);
+                resLogisticsRecList.add(resLogisticsRec);
+            }while(rs.next());
+            this.closeConnection();
+        } catch (SQLException e) {
+            return null;
+        }
+        return resLogisticsRecList;
+    }
 
 }

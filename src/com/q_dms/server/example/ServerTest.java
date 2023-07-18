@@ -16,16 +16,18 @@ public class ServerTest {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         User user = new User("user001", "user11213", "男");
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        LogisticsRec logisticsRec = new LogisticsRec(-1, timestamp, "中国", "01111", "小五", "小六", "1", "-1");
-        LogRec logRec = new LogRec(-1, timestamp, "四川", "11111", "十九", "192.168.2.2", "3", "-1");
+        LogisticsRec logisticsRec = new LogisticsRec(32, timestamp, "中国", "01111", "小五", "小六", "1", "-1");
+        LogisticsRec logisticsRec1 = new LogisticsRec(-1, null, "纽", "", "", "", "", "user3");
+        LogRec logRec = new LogRec(-1, timestamp, "", "", "", "", "", "user1");
+        LogRec logRec1 = new LogRec(-1, timestamp, "1", " ", " ", " ", " ", "user1");
 
 
         //        int businessId = 1;
 //        Request request = new Request(user, businessId,null,null);
 //        int businessId = 6;
 //        Request request = new Request(user, businessId,null,logisticsRec);
-        int businessId = 7;
-        Request request = new Request(user, businessId, logRec, logisticsRec);
+        int businessId = 11;
+        Request request = new Request(user, businessId, logRec1, null);
 
 
         sendData(request);

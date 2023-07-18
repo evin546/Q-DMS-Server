@@ -27,6 +27,10 @@ public class Server {
     static final int ADD_LOG_REC = 5;
     static final int ADD_LOGISTICS_REC = 6;
     static final int CHANG_PASSWORD = 7;
+    static final int DELETE_LOG_REC = 8;
+    static final int DELETE_LOGISTICS_REC = 9;
+    static final int SEARCH_LOG_REC = 10;
+    static final int SEARCH_LOGISTICS_REC = 11;
 
 
     /**
@@ -67,6 +71,7 @@ public class Server {
             LogisticsRec logisticsRec = request.getLogisticsRec();
             System.out.println( getCurrentTime() + " 客户端业务ID： " + businessId);
 
+
             //执行对应业务逻辑
             switch (businessId) {
                 case REGISTER ->
@@ -83,6 +88,14 @@ public class Server {
                         sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().addLogisticsRec(user, logisticsRec));
                 case CHANG_PASSWORD ->
                         sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().changePassword(user));
+                case DELETE_LOG_REC ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().deleteLogRec(logRec));
+                case DELETE_LOGISTICS_REC ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().deleteLogisticsRec(logisticsRec));
+                case SEARCH_LOG_REC ->
+                    sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().searchLogRecInDatabase(logRec));
+                case SEARCH_LOGISTICS_REC ->
+                        sendResponse(clientSocket, DatabaseUtil.getDatabaseUtil().searchLogisticsRecInDatabase(logisticsRec));
                 default ->
                         System.out.println(getCurrentTime() + " 客户端业务ID提交错误！");
             }
